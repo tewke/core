@@ -36,12 +36,18 @@ async def async_setup_entry(
     try:
         await tap.discover()
     except PyTewkeDiscoveryError as err:
-        msg = f"Unable to connect to Tewke device at {entry.data[CONF_HOST]}"
-        raise ConfigEntryNotReady(msg) from err
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="discovery_error",
+            translation_placeholders={"host": entry.data[CONF_HOST]},
+        ) from err
 
     if tap.wall_dock_id is None:
-        msg = f"Tewke device at {entry.data[CONF_HOST]} missing wall_dock_id"
-        raise ConfigEntryNotReady(msg)
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="missing_wall_dock_id",
+            translation_placeholders={"host": entry.data[CONF_HOST]},
+        )
 
     entry.async_on_unload(tap.close)
 

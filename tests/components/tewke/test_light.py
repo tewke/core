@@ -316,11 +316,11 @@ async def test_light_availability(
         ),
         (
             PyTewkeInvalidRequestError("Invalid request"),
-            "Error .* target .*|Error .* scene .*",
+            "(?i)error .* tewke .*",
         ),
         (
             PyTewkeCoapError("Coap error", code=1),
-            "Error .* target .*|Error .* scene .*",
+            "(?i)error .* tewke .*",
         ),
     ],
 )

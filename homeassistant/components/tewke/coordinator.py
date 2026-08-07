@@ -14,7 +14,7 @@ from homeassistant.core import HassJob, callback
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import LOGGER
+from .const import DOMAIN, LOGGER
 from .util import async_setup_observe
 
 if TYPE_CHECKING:
@@ -243,8 +243,12 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
 
         if tap.wall_dock_id != expected_dock_id:
             raise UpdateFailed(
-                f"Device swap detected! Coordinator expected {expected_dock_id} "
-                f"but IP is reporting {tap.wall_dock_id}. Waiting for Zeroconf update."
+                translation_domain=DOMAIN,
+                translation_key="device_swap",
+                translation_placeholders={
+                    "expected_dock_id": str(expected_dock_id),
+                    "reported_dock_id": str(tap.wall_dock_id),
+                },
             )
 
         try:
@@ -256,8 +260,11 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
             PyTewkeUnknownError,
             TimeoutError,
         ) as err:
-            msg = f"Error communicating with Tewke Tap: {err}"
-            raise UpdateFailed(msg) from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN,
+                translation_key="communication_error",
+                translation_placeholders={"error": str(err)},
+            ) from err
 
         scenes = self.config_entry.runtime_data.scenes
         configured_scenes = {

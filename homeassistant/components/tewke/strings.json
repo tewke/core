@@ -55,6 +55,24 @@
     }
   },
   "exceptions": {
+    "action_failed": {
+      "message": "Error {action} Tewke {identifier}: {error}"
+    },
+    "action_internal": {
+      "message": "Internal error {action} Tewke {identifier}: {error}"
+    },
+    "communication_error": {
+      "message": "Error communicating with Tewke Tap: {error}"
+    },
+    "device_swap": {
+      "message": "Device swap detected! Coordinator expected {expected_dock_id} but IP is reporting {reported_dock_id}. Waiting for Zeroconf update."
+    },
+    "discovery_error": {
+      "message": "Unable to connect to Tewke device at {host}"
+    },
+    "missing_wall_dock_id": {
+      "message": "Tewke device at {host} missing wall_dock_id"
+    },
     "not_connected_to_wall_dock": {
       "message": "Attempted to set {name} while not connected to Wall Dock."
     },
@@ -72,12 +90,6 @@
     },
     "set_energy_override_timeout": {
       "message": "Setting energy override timed out."
-    },
-    "set_scene_failed": {
-      "message": "Error {action} scene {scene}: {error}"
-    },
-    "set_target_failed": {
-      "message": "Error {action} target {target}: {error}"
     }
   },
   "issues": {

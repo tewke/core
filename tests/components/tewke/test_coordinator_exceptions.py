@@ -65,7 +65,7 @@ async def test_coordinator_device_swap(
     )
     with (
         patch.object(coordinator, "_setup_observe", return_value=True),
-        pytest.raises(UpdateFailed, match="Device swap detected"),
+        pytest.raises(UpdateFailed, match="device_swap"),
     ):
         await coordinator._async_update_data()
 
@@ -90,7 +90,7 @@ async def test_coordinator_get_scenes_fails(
     )
     with (
         patch.object(coordinator, "_setup_observe", return_value=True),
-        pytest.raises(UpdateFailed, match="Error communicating with Tewke Tap"),
+        pytest.raises(UpdateFailed, match="communication_error"),
     ):
         await coordinator._async_update_data()
 
@@ -116,7 +116,7 @@ async def test_coordinator_get_targets_fails(
     )
     with (
         patch.object(coordinator, "_setup_observe", return_value=True),
-        pytest.raises(UpdateFailed, match="Error communicating with Tewke Tap:"),
+        pytest.raises(UpdateFailed, match="communication_error"),
     ):
         await coordinator._async_update_data()
 
