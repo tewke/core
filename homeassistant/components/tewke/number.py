@@ -13,10 +13,11 @@ from pytewke.error import (
 )
 
 from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
-from homeassistant.const import UnitOfPower
+from homeassistant.const import EntityCategory, UnitOfPower
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .const import DOMAIN
 from .entity import TewkeEntity
 
 if TYPE_CHECKING:
@@ -46,10 +47,11 @@ class TewkeEnergyOverrideNumber(TewkeEntity, NumberEntity):
     A positive value (watts) activates the override; setting 0 clears it.
     """
 
-    _attr_name = "Energy Override"
+    _attr_translation_key = "energy_override"
     _attr_device_class = NumberDeviceClass.POWER
     _attr_native_unit_of_measurement = UnitOfPower.WATT
     _attr_mode = NumberMode.BOX
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_entity_registry_enabled_default = False
     _attr_native_min_value = 0
     _attr_native_max_value = 1_000_000
@@ -83,11 +85,22 @@ class TewkeEnergyOverrideNumber(TewkeEntity, NumberEntity):
         try:
             updated = await tap.set_energy_override(override_value)
         except (PyTewkeInvalidRequestError, RuntimeError) as err:
-            raise HomeAssistantError("Internal error setting energy override") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_energy_override_internal",
+                translation_placeholders={"error": str(err)},
+            ) from err
         except TimeoutError as err:
-            raise HomeAssistantError("Setting energy override timed out") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_energy_override_timeout",
+            ) from err
         except (PyTewkeCoapError, PyTewkeUnknownError) as err:
-            raise HomeAssistantError("Error setting energy override") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_energy_override_failed",
+                translation_placeholders={"error": str(err)},
+            ) from err
 
         current = self.coordinator.data
         self.coordinator.async_set_updated_data({**current, "energy_override": updated})

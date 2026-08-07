@@ -17,6 +17,7 @@ from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEnti
 from homeassistant.core import callback
 
 from .entity import TewkeEntity, tewke_error_handler
+from .const import DOMAIN
 from .util import _ha_to_tewke_brightness, _tewke_to_ha_brightness
 
 if TYPE_CHECKING:
@@ -103,6 +104,39 @@ class TewkeSceneEntity(TewkeEntity):
                 self._brightness = brightness
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
+        except PyTewkeInvalidWallDockError as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="not_connected_to_wall_dock",
+                translation_placeholders={"name": "Scene"},
+            ) from e
+        except (PyTewkeInvalidRequestError, RuntimeError) as e:
+            action = "activating" if state else "deactivating"
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_scene_failed",
+                translation_placeholders={
+                    "action": action,
+                    "scene": str(self._scene_id),
+                    "error": str(e),
+                },
+            ) from e
+        except (
+            PyTewkeCoapError,
+            PyTewkeInvalidResponseError,
+            PyTewkeUnknownError,
+            TimeoutError,
+        ) as e:
+            action = "activating" if state else "deactivating"
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_scene_failed",
+                translation_placeholders={
+                    "action": action,
+                    "scene": str(self._scene_id),
+                    "error": str(e),
+                },
+            ) from e
 
 
 # pylint: disable-next=home-assistant-enforce-class-module

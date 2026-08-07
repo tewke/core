@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, override
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.core import callback
 
+from .const import DOMAIN
 from .entity import TewkeEntity, tewke_error_handler
 from .util import _ha_to_tewke_brightness, _tewke_to_ha_brightness
 
@@ -113,6 +114,37 @@ class TewkeTargetLight(TewkeEntity, LightEntity):
             self._brightness = tewke_brightness
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
+        except PyTewkeInvalidWallDockError as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="not_connected_to_wall_dock",
+                translation_placeholders={"name": f"Target {self._target_index}"},
+            ) from e
+        except (PyTewkeInvalidRequestError, RuntimeError) as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_target_failed",
+                translation_placeholders={
+                    "action": "activating",
+                    "target": str(self._target_index),
+                    "error": str(e),
+                },
+            ) from e
+        except (
+            PyTewkeCoapError,
+            PyTewkeInvalidResponseError,
+            PyTewkeUnknownError,
+            TimeoutError,
+        ) as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_target_failed",
+                translation_placeholders={
+                    "action": "activating",
+                    "target": str(self._target_index),
+                    "error": str(e),
+                },
+            ) from e
 
     @override
     async def async_turn_off(self, **_kwargs: object) -> None:
@@ -125,3 +157,34 @@ class TewkeTargetLight(TewkeEntity, LightEntity):
             self._brightness = 0
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
+        except PyTewkeInvalidWallDockError as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="not_connected_to_wall_dock",
+                translation_placeholders={"name": f"Target {self._target_index}"},
+            ) from e
+        except (PyTewkeInvalidRequestError, RuntimeError) as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_target_failed",
+                translation_placeholders={
+                    "action": "turning off",
+                    "target": str(self._target_index),
+                    "error": str(e),
+                },
+            ) from e
+        except (
+            PyTewkeCoapError,
+            PyTewkeInvalidResponseError,
+            PyTewkeUnknownError,
+            TimeoutError,
+        ) as e:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_target_failed",
+                translation_placeholders={
+                    "action": "turning off",
+                    "target": str(self._target_index),
+                    "error": str(e),
+                },
+            ) from e

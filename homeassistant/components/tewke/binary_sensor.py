@@ -12,6 +12,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .entity import TewkeEntity
@@ -39,13 +40,15 @@ class TewkeBinarySensorEntityDescription(BinarySensorEntityDescription):
 BINARY_SENSOR_DESCRIPTIONS: tuple[TewkeBinarySensorEntityDescription, ...] = (
     TewkeBinarySensorEntityDescription(
         key="stabilisation_status",
-        name="Stabilisation Status",
+        translation_key="stabilisation_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=lambda s: s.stabilisation_status,
     ),
     TewkeBinarySensorEntityDescription(
         key="run_in_status",
-        name="Run-in Status",
+        translation_key="run_in_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=lambda s: s.run_in_status,
     ),
