@@ -1,7 +1,7 @@
 """Test the Tewke config flow."""
 
 import ipaddress
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from pytewke.error import PyTewkeDiscoveryError
 
@@ -147,7 +147,7 @@ async def test_zeroconf_flow_connection_error(
     hass: HomeAssistant, mock_tap: AsyncMock
 ) -> None:
     """Test zeroconf discovery flow handles connection error."""
-    mock_tap.discover.side_effect = [PyTewkeDiscoveryError, None, None]
+    mock_tap.discover.side_effect = [PyTewkeDiscoveryError, None]
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
@@ -188,11 +188,15 @@ async def test_zeroconf_flow_connection_error(
     mock_tap.close.assert_called_once()
 
     # Recover
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={},
-    )
+    with patch(
+        "homeassistant.components.tewke.async_setup_entry",
+        return_value=True,
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={},
+        )
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Tewke Switch"
-    assert mock_tap.discover.call_count == 3
+    assert mock_tap.discover.call_count == 2

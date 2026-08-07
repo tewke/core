@@ -1,11 +1,44 @@
 """TewkeEntity base class."""
 
+from collections.abc import Generator
+from contextlib import contextmanager
+
+from pytewke.error import (
+    PyTewkeCoapError,
+    PyTewkeInvalidRequestError,
+    PyTewkeInvalidResponseError,
+    PyTewkeInvalidWallDockError,
+    PyTewkeUnknownError,
+)
+
 from homeassistant.const import CONF_NAME
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import TewkeCoordinator
+
+
+@contextmanager
+def tewke_error_handler(action: str, identifier: str) -> Generator[None]:
+    """Catch PyTewke errors and raise HomeAssistantError."""
+    try:
+        yield
+    except PyTewkeInvalidWallDockError as e:
+        msg = f"Attempted to set {identifier.capitalize()} while not connected to Wall Dock"
+        raise HomeAssistantError(msg) from e
+    except (PyTewkeInvalidRequestError, RuntimeError) as e:
+        msg = f"Internal error {action} Tewke {identifier}: {e}"
+        raise HomeAssistantError(msg) from e
+    except (
+        PyTewkeCoapError,
+        PyTewkeInvalidResponseError,
+        PyTewkeUnknownError,
+        TimeoutError,
+    ) as e:
+        msg = f"Error {action} Tewke {identifier}: {e}"
+        raise HomeAssistantError(msg) from e
 
 
 class TewkeEntity(CoordinatorEntity[TewkeCoordinator]):

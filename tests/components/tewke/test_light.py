@@ -27,7 +27,7 @@ from tests.common import MockConfigEntry
 
 
 @pytest.fixture
-def mock_tap_with_lights(mock_tap):
+def mock_tap_with_lights(mock_tap: AsyncMock) -> AsyncMock:
     """Mock tap with lights data."""
     mock_tap.get_config = AsyncMock(
         return_value=ConfigData.model_construct(
@@ -77,7 +77,7 @@ def mock_tap_with_lights(mock_tap):
 async def test_lights(
     hass: HomeAssistant,
     entity_registry: er.EntityRegistry,
-    mock_tap_with_lights,
+    mock_tap_with_lights: AsyncMock,
     mock_config_entry: MockConfigEntry,
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -208,7 +208,7 @@ async def test_lights(
 async def test_light_availability(
     hass: HomeAssistant,
     entity_registry: er.EntityRegistry,
-    mock_tap_with_lights,
+    mock_tap_with_lights: AsyncMock,
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test the availability of Tewke light entities."""
@@ -273,17 +273,22 @@ async def test_light_availability(
     target1_entity = hass.data["light"].get_entity(target1_entity_id)
     assert target1_entity is not None
     await target1_entity.async_turn_on(brightness=128)
+    mock_tap_with_lights.set_target.assert_not_called()
 
     scene1_entity = hass.data["light"].get_entity(
         "light.living_room_tewke_switch_morning"
     )
     assert scene1_entity is not None
     await scene1_entity.async_turn_on()
+    mock_tap_with_lights.set_scene.assert_called_once_with(
+        scene_id="scene1", state=True, brightness=100
+    )
 
     # Also test `async_turn_on` on a target entity where `coordinator.data["targets"]` is missing the target
     # This covers `if target is None: return` in target.async_turn_on and `brightness` when target is None
     new_data = TewkeCoordinatorData(
         targets={},  # Target missing
+        scenes={},
         scenes_all=coordinator.data["scenes_all"],
         sensors=coordinator.data["sensors"],
         radar=coordinator.data["radar"],
@@ -322,7 +327,7 @@ async def test_light_availability(
 async def test_light_errors(
     hass: HomeAssistant,
     entity_registry: er.EntityRegistry,
-    mock_tap_with_lights,
+    mock_tap_with_lights: AsyncMock,
     mock_config_entry: MockConfigEntry,
     exception: Exception,
     expected_message: str,

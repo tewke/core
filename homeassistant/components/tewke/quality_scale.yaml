@@ -34,9 +34,7 @@ rules:
   integration-owner: done
   log-when-unavailable: done
   parallel-updates: done
-  reauthentication-flow:
-    status: exempt
-    comment: The integration does not require authentication.
+  reauthentication-flow: done
   test-coverage: done
 
   # Gold
