@@ -3,7 +3,6 @@
 import ipaddress
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from pytewke.error import PyTewkeDiscoveryError
 
 from homeassistant.components.tewke.const import DOMAIN
@@ -13,19 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
-
-@pytest.fixture
-def mock_tap():
-    """Mock pytewke.Tap."""
-    with patch(
-        "homeassistant.components.tewke.config_flow.pytewke.Tap", autospec=True
-    ) as mock_tap:
-        tap_instance = mock_tap.return_value
-        tap_instance.resources = {}
-        tap_instance.discover = AsyncMock()
-        tap_instance.get_scenes = AsyncMock(return_value={"scene1": "Mock Scene"})
-        tap_instance.close = AsyncMock()
-        yield mock_tap
+from tests.common import MockConfigEntry
 
 
 async def test_zeroconf_no_hardware_id(
@@ -63,7 +50,7 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
             type="._tewke-coap._udp.local.",
             name="tewke-1._tewke-coap._udp.local.",
             properties={
-                "hardwareId": "12345",
+                "hardwareId": "test_dock_id",
                 "name": "Tewke Switch",
                 "room": "Living Room",
             },
@@ -95,9 +82,9 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
         CONF_HOST: "127.0.0.1",
         CONF_NAME: "Tewke Switch",
         "room_name": "Living Room",
-        "scenes": {"scene1": "Mock Scene"},
+        "scenes": {},
     }
-    assert result["result"].unique_id == "12345"
+    assert result["result"].unique_id == "test_dock_id"
 
 
 async def test_full_zeroconf_flow_no_room(
@@ -115,7 +102,7 @@ async def test_full_zeroconf_flow_no_room(
             type="._tewke-coap._udp.local.",
             name="tewke-1._tewke-coap._udp.local.",
             properties={
-                "hardwareId": "12345",
+                "hardwareId": "test_dock_id",
                 "name": "Tewke Switch",
             },
         ),
@@ -129,17 +116,38 @@ async def test_full_zeroconf_flow_no_room(
     }
 
 
+async def test_reauth_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> None:
+    """Test reauth flow."""
+    mock_entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="test_dock_id",
+        data={
+            CONF_HOST: "192.168.1.100",
+            CONF_NAME: "Tewke Switch",
+            "room_name": "Living Room",
+        },
+    )
+    mock_entry.add_to_hass(hass)
+
+    result = await mock_entry.start_reauth_flow(hass)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "confirmation"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={},
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+
+
 async def test_zeroconf_flow_connection_error(
     hass: HomeAssistant, mock_tap: AsyncMock
 ) -> None:
     """Test zeroconf discovery flow handles connection error."""
-    tap_1 = AsyncMock()
-    tap_1.resources = {}
-    tap_1.discover.side_effect = PyTewkeDiscoveryError
-    tap_2 = AsyncMock()
-    tap_2.resources = {}
-    tap_2.get_scenes.return_value = {"scene1": "Mock Scene"}
-    mock_tap.side_effect = [tap_1, tap_2]
+    mock_tap.discover.side_effect = [PyTewkeDiscoveryError, None]
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
@@ -152,7 +160,7 @@ async def test_zeroconf_flow_connection_error(
             type="._tewke-coap._udp.local.",
             name="tewke-1._tewke-coap._udp.local.",
             properties={
-                "hardwareId": "12345",
+                "hardwareId": "test_dock_id",
                 "name": "Tewke Switch",
                 "room": "Living Room",
             },
@@ -177,14 +185,18 @@ async def test_zeroconf_flow_connection_error(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "confirmation"
     assert result["errors"] == {"base": "cannot_connect"}
-    tap_1.close.assert_called_once()
+    mock_tap.close.assert_called_once()
 
     # Recover
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={},
-    )
+    with patch(
+        "homeassistant.components.tewke.async_setup_entry",
+        return_value=True,
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={},
+        )
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Tewke Switch"
-    tap_2.discover.assert_called_once()
+    assert mock_tap.discover.call_count == 2

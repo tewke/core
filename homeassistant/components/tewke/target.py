@@ -11,19 +11,10 @@ Dimmable targets expose "ColorMode.BRIGHTNESS"; non-dimmable ones expose
 
 from typing import TYPE_CHECKING, Any, override
 
-from pytewke.error import (
-    PyTewkeCoapError,
-    PyTewkeInvalidRequestError,
-    PyTewkeInvalidResponseError,
-    PyTewkeInvalidWallDockError,
-    PyTewkeUnknownError,
-)
-
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.core import callback
 
-from .const import LOGGER
-from .entity import TewkeEntity
+from .entity import TewkeEntity, tewke_error_handler
 from .util import _ha_to_tewke_brightness, _tewke_to_ha_brightness
 
 if TYPE_CHECKING:
@@ -114,7 +105,7 @@ class TewkeTargetLight(TewkeEntity, LightEntity):
         else:
             tewke_brightness = 100
 
-        try:
+        with tewke_error_handler("activating", f"target {self._target_index}"):
             await self.coordinator.config_entry.runtime_data.tap.set_target(
                 target=self._target_index, brightness=tewke_brightness
             )
@@ -122,27 +113,11 @@ class TewkeTargetLight(TewkeEntity, LightEntity):
             self._brightness = tewke_brightness
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
-        except PyTewkeInvalidWallDockError:
-            LOGGER.error(
-                "Attempted to set Target %s while not connected to Wall Dock",
-                self._target_index,
-            )
-        except (PyTewkeInvalidRequestError, RuntimeError) as e:
-            LOGGER.error(
-                "Internal error activating Tewke target %s: %s", self._target_index, e
-            )
-        except (
-            PyTewkeCoapError,
-            PyTewkeInvalidResponseError,
-            PyTewkeUnknownError,
-            TimeoutError,
-        ) as e:
-            LOGGER.error("Error activating Tewke target %s: %s", self._target_index, e)
 
     @override
     async def async_turn_off(self, **_kwargs: object) -> None:
         """Turn off the output."""
-        try:
+        with tewke_error_handler("turning off", f"target {self._target_index}"):
             await self.coordinator.config_entry.runtime_data.tap.set_target(
                 target=self._target_index, brightness=0
             )
@@ -150,19 +125,3 @@ class TewkeTargetLight(TewkeEntity, LightEntity):
             self._brightness = 0
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
-        except PyTewkeInvalidWallDockError:
-            LOGGER.error(
-                "Attempted to set Target %s while not connected to Wall Dock",
-                self._target_index,
-            )
-        except (PyTewkeInvalidRequestError, RuntimeError) as e:
-            LOGGER.error(
-                "Internal error turning off Tewke target %s: %s", self._target_index, e
-            )
-        except (
-            PyTewkeCoapError,
-            PyTewkeInvalidResponseError,
-            PyTewkeUnknownError,
-            TimeoutError,
-        ) as e:
-            LOGGER.error("Error turning off Tewke target %s: %s", self._target_index, e)

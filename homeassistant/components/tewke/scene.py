@@ -9,21 +9,14 @@ Scene brightness is write-only on the Tewke API; the last commanded value is
 held locally for optimistic rendering.
 """
 
-from typing import TYPE_CHECKING, Any, override
+# pylint: disable=home-assistant-missing-parallel-updates
 
-from pytewke.error import (
-    PyTewkeCoapError,
-    PyTewkeInvalidRequestError,
-    PyTewkeInvalidResponseError,
-    PyTewkeInvalidWallDockError,
-    PyTewkeUnknownError,
-)
+from typing import TYPE_CHECKING, Any, override
 
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.core import callback
 
-from .const import LOGGER
-from .entity import TewkeEntity
+from .entity import TewkeEntity, tewke_error_handler
 from .util import _ha_to_tewke_brightness, _tewke_to_ha_brightness
 
 if TYPE_CHECKING:
@@ -99,7 +92,9 @@ class TewkeSceneEntity(TewkeEntity):
         self, *, state: bool, brightness: int | None = None
     ) -> None:
         """Set the scene state and brightness."""
-        try:
+        action = "activating" if state else "deactivating"
+        identifier = f"scene {self._scene_id}"
+        with tewke_error_handler(action, identifier):
             await self.coordinator.config_entry.runtime_data.tap.set_scene(
                 scene_id=self._scene_id, state=state, brightness=brightness
             )
@@ -108,19 +103,6 @@ class TewkeSceneEntity(TewkeEntity):
                 self._brightness = brightness
             self.async_write_ha_state()
             await self.coordinator.async_request_refresh()
-        except PyTewkeInvalidWallDockError:
-            LOGGER.error("Attempted to set Scene while not connected to Wall Dock")
-        except PyTewkeInvalidRequestError, RuntimeError:
-            action = "activating" if state else "deactivating"
-            LOGGER.exception("Internal error %s Tewke scene %s", action, self._scene_id)
-        except (
-            PyTewkeCoapError,
-            PyTewkeInvalidResponseError,
-            PyTewkeUnknownError,
-            TimeoutError,
-        ):
-            action = "activating" if state else "deactivating"
-            LOGGER.exception("Error %s Tewke scene %s", action, self._scene_id)
 
 
 # pylint: disable-next=home-assistant-enforce-class-module
