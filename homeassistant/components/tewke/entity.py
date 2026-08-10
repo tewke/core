@@ -26,19 +26,36 @@ def tewke_error_handler(action: str, identifier: str) -> Generator[None]:
     try:
         yield
     except PyTewkeInvalidWallDockError as e:
-        msg = f"Attempted to set {identifier.capitalize()} while not connected to Wall Dock"
-        raise HomeAssistantError(msg) from e
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="not_connected_to_wall_dock",
+            translation_placeholders={"name": identifier.capitalize()},
+        ) from e
     except (PyTewkeInvalidRequestError, RuntimeError) as e:
-        msg = f"Internal error {action} Tewke {identifier}: {e}"
-        raise HomeAssistantError(msg) from e
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="action_internal",
+            translation_placeholders={
+                "action": action,
+                "identifier": identifier,
+                "error": str(e),
+            },
+        ) from e
     except (
         PyTewkeCoapError,
         PyTewkeInvalidResponseError,
         PyTewkeUnknownError,
         TimeoutError,
     ) as e:
-        msg = f"Error {action} Tewke {identifier}: {e}"
-        raise HomeAssistantError(msg) from e
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="action_failed",
+            translation_placeholders={
+                "action": action,
+                "identifier": identifier,
+                "error": str(e),
+            },
+        ) from e
 
 
 class TewkeEntity(CoordinatorEntity[TewkeCoordinator]):

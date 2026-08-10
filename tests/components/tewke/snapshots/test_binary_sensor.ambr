@@ -12,7 +12,7 @@
     'device_id': <ANY>,
     'disabled_by': None,
     'domain': 'binary_sensor',
-    'entity_category': None,
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
     'entity_id': 'binary_sensor.living_room_tewke_switch_run_in_status',
     'has_entity_name': True,
     'hidden_by': None,
@@ -21,17 +21,17 @@
     'labels': set({
     }),
     'name': None,
-    'object_id_base': 'Run-in Status',
+    'object_id_base': 'Run-in status',
     'options': dict({
     }),
     'original_device_class': None,
     'original_icon': None,
-    'original_name': 'Run-in Status',
+    'original_name': 'Run-in status',
     'platform': 'tewke',
     'previous_unique_id': None,
     'suggested_object_id': None,
     'supported_features': 0,
-    'translation_key': None,
+    'translation_key': 'run_in_status',
     'unique_id': 'hw123_sensor_run_in_status',
     'unit_of_measurement': None,
   })
@@ -39,7 +39,7 @@
 # name: test_binary_sensors[binary_sensor.living_room_tewke_switch_run_in_status-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Tewke Switch Run-in Status',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Tewke Switch Run-in status',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.living_room_tewke_switch_run_in_status',
@@ -113,7 +113,7 @@
     'device_id': <ANY>,
     'disabled_by': None,
     'domain': 'binary_sensor',
-    'entity_category': None,
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
     'entity_id': 'binary_sensor.living_room_tewke_switch_stabilisation_status',
     'has_entity_name': True,
     'hidden_by': None,
@@ -122,17 +122,17 @@
     'labels': set({
     }),
     'name': None,
-    'object_id_base': 'Stabilisation Status',
+    'object_id_base': 'Stabilisation status',
     'options': dict({
     }),
     'original_device_class': None,
     'original_icon': None,
-    'original_name': 'Stabilisation Status',
+    'original_name': 'Stabilisation status',
     'platform': 'tewke',
     'previous_unique_id': None,
     'suggested_object_id': None,
     'supported_features': 0,
-    'translation_key': None,
+    'translation_key': 'stabilisation_status',
     'unique_id': 'hw123_sensor_stabilisation_status',
     'unit_of_measurement': None,
   })
@@ -140,7 +140,7 @@
 # name: test_binary_sensors[binary_sensor.living_room_tewke_switch_stabilisation_status-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Tewke Switch Stabilisation Status',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Tewke Switch Stabilisation status',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.living_room_tewke_switch_stabilisation_status',

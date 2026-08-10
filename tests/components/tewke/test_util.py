@@ -54,7 +54,6 @@ async def test_async_setup_observe_success(
         scenes={
             "scene1": Scene(id="scene1", name="Scene 1", isActive=False, brightness=0),
         },
-        pending_scenes={},
     )
 
     coordinator = AsyncMock()
@@ -90,7 +89,6 @@ async def test_async_setup_observe_error(
         coordinator=AsyncMock(),
         tap=mock_tap,
         scenes={},
-        pending_scenes={},
     )
 
     coordinator = AsyncMock()
@@ -121,17 +119,12 @@ async def test_tewke_observer(
             "scene1": Scene(id="scene1", name="Scene 1", isActive=False, brightness=0),
             "scene2": Scene(id="scene2", name="Scene 2", isActive=False, brightness=0),
         },
-        pending_scenes={
-            "pending1": Scene(
-                id="pending1", name="Scene pending 1", isActive=False, brightness=0
-            )
-        },
     )
     mock_config_entry.add_to_hass(hass)
 
     coordinator = AsyncMock()
     coordinator.data = TewkeCoordinatorData(
-        config=ConfigData.model_construct(),
+        config=ConfigData.model_construct(hardware_id="test_hardware"),
         energy=None,
         radar=None,
         sensors=None,
@@ -149,19 +142,26 @@ async def test_tewke_observer(
     assert "scene2" not in mock_config_entry.runtime_data.scenes
 
     # Test on_scene_update: new scene
+    with patch(
+        "homeassistant.components.tewke.util.async_dispatcher_send"
+    ) as mock_dispatcher:
+        observer.on_scene_update(
+            {
+                "scene1": Scene.model_construct(id="scene1", name="Scene 1"),
+                "scene3": Scene.model_construct(id="scene3", name="Scene 3"),
+            }
+        )
+        assert "scene3" in mock_config_entry.runtime_data.scenes
+        mock_dispatcher.assert_called_once()
+        assert mock_dispatcher.call_args[0][1] == "tewke_add_scenes"
+
+    # Test on_scene_update: no new scenes
     observer.on_scene_update(
         {
             "scene1": Scene.model_construct(id="scene1", name="Scene 1"),
             "scene3": Scene.model_construct(id="scene3", name="Scene 3"),
         }
     )
-    assert "scene3" in mock_config_entry.runtime_data.pending_scenes
-
-    # Test on_scene_update: no new scenes
-    observer.on_scene_update(
-        {"scene1": Scene.model_construct(id="scene1", name="Scene 1")}
-    )
-    assert "scene3" not in mock_config_entry.runtime_data.pending_scenes
 
     # Test on_target_update
     observer.on_target_update({1: Target.model_construct(id=1, name="Target 1")})

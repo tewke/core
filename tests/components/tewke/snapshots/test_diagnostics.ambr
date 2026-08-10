@@ -1,0 +1,30 @@
+# serializer version: 1
+# name: test_diagnostics
+  dict({
+    'data': dict({
+      'config': dict({
+        'hardware_id': '**REDACTED**',
+        'screen_on': None,
+      }),
+      'energy': None,
+      'energy_override': None,
+      'radar': None,
+      'scenes': dict({
+      }),
+      'scenes_all': dict({
+      }),
+      'sensors': None,
+      'targets': dict({
+      }),
+    }),
+    'entry_data': dict({
+      'host': '**REDACTED**',
+      'name': 'Tewke Switch',
+      'room_name': 'Living Room',
+      'scenes': dict({
+        'scene1': 'scene1',
+        'scene2': 'scene2',
+      }),
+    }),
+  })
+# ---

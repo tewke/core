@@ -16,6 +16,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .const import DOMAIN
 from .entity import TewkeEntity
 
 if TYPE_CHECKING:
@@ -40,9 +41,8 @@ async def async_setup_entry(
 class TewkeRestartButton(TewkeEntity, ButtonEntity):
     """Button entity to restart the Tewke Tap Panel."""
 
-    _attr_name = "Restart"
     _attr_device_class = ButtonDeviceClass.RESTART
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator: TewkeCoordinator) -> None:
@@ -61,11 +61,17 @@ class TewkeRestartButton(TewkeEntity, ButtonEntity):
             await tap.restart()
         except (PyTewkeInvalidRequestError, RuntimeError) as err:
             raise HomeAssistantError(
-                "Internal error restarting Tewke Tap Panel"
+                translation_domain=DOMAIN,
+                translation_key="restart_internal",
+                translation_placeholders={"error": str(err)},
             ) from err
         except (
             PyTewkeCoapError,
             PyTewkeUnknownError,
             TimeoutError,
         ) as err:
-            raise HomeAssistantError("Error restarting Tewke Tap Panel") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="restart_failed",
+                translation_placeholders={"error": str(err)},
+            ) from err

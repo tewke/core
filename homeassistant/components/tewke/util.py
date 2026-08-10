@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 from pytewke.error import PyTewkeObserveError
 
 from homeassistant.const import CONF_NAME
-from homeassistant.helpers import device_registry as dr, issue_registry as ir
+from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import DOMAIN, LOGGER
+from .const import DISPATCHER_ADD_SCENES, DOMAIN, LOGGER
 
 if TYPE_CHECKING:
     from pytewke.data import (
@@ -60,8 +61,9 @@ class _TewkeObserver:
     def on_scene_update(self, scenes: dict[str, Scene]) -> None:
         """Handle scene updates from the Tewke device.
 
-        This callback is triggered when the scenes on the device change. It
-        identifies new scenes and creates a repair issue to configure them.
+        This callback is triggered when the scenes on the device change.
+        It identifies new scenes, automatically adds them to the integration,
+        and removes deleted scenes.
         """
         self.coordinator.reset_observation_timeout()
         if self.coordinator.data is None:
@@ -72,19 +74,41 @@ class _TewkeObserver:
         # Handle scenes that are no longer provided by the device
         removed_configured_ids = [sid for sid in current_scenes if sid not in scenes]
         if removed_configured_ids:
-            LOGGER.info(
-                "Marking deleted scenes as unavailable: %s", removed_configured_ids
-            )
+            LOGGER.info("Removing deleted scenes: %s", removed_configured_ids)
+
+            ent_reg = er.async_get(self.hass)
+            config_data = self.coordinator.data["config"]
+            if config_data:
+                hardware_id = config_data.hardware_id
+                for sid in removed_configured_ids:
+                    unique_id = f"{hardware_id}_{sid}"
+                    entity_id = ent_reg.async_get_entity_id("light", DOMAIN, unique_id)
+                    if entity_id:
+                        ent_reg.async_remove(entity_id)
 
             for sid in removed_configured_ids:
                 del current_scenes[sid]
 
+        # Add new scenes
+        new_scenes = {
+            scene_id: scene
+            for scene_id, scene in scenes.items()
+            if scene_id not in current_scenes
+        }
+
+        if new_scenes:
+            LOGGER.info("Discovered new scenes, automatically adding: %s", new_scenes)
+            current_scenes.update(new_scenes)
+            async_dispatcher_send(
+                self.hass, DISPATCHER_ADD_SCENES, list(new_scenes.values())
+            )
+
+        # Update entry if there were any changes
+        if removed_configured_ids or new_scenes:
             new_data = dict(self.entry.data)
             new_data["scenes"] = current_scenes
-
             self.entry.runtime_data.scenes = current_scenes
             self.hass.config_entries.async_update_entry(self.entry, data=new_data)
-            return
 
         configured_scenes = {
             scene_id: scene
@@ -99,40 +123,6 @@ class _TewkeObserver:
                 "scenes_all": scenes,
             }
         )
-
-        # Remove pending scenes that no longer exist on the device
-        stale_ids = [
-            sid for sid in self.entry.runtime_data.pending_scenes if sid not in scenes
-        ]
-        for sid in stale_ids:
-            del self.entry.runtime_data.pending_scenes[sid]
-
-        new_scenes = {
-            scene_id: scene
-            for scene_id, scene in scenes.items()
-            if scene_id not in current_scenes
-            and scene_id not in self.entry.runtime_data.pending_scenes
-        }
-
-        if not new_scenes and not self.entry.runtime_data.pending_scenes:
-            ir.async_delete_issue(
-                self.hass, DOMAIN, f"new_scenes_found_{self.entry.entry_id}"
-            )
-
-        if new_scenes:
-            LOGGER.info("Discovered new scenes, pending configuration: %s", new_scenes)
-            self.entry.runtime_data.pending_scenes.update(new_scenes)
-            ir.async_create_issue(
-                self.hass,
-                DOMAIN,
-                f"new_scenes_found_{self.entry.entry_id}",
-                data={"entry_id": self.entry.entry_id},
-                is_fixable=True,
-                is_persistent=False,
-                severity=ir.IssueSeverity.WARNING,
-                translation_key="new_scenes_found",
-                translation_placeholders={"name": self.entry.title},
-            )
 
     def on_target_update(self, targets: dict[int, Target]) -> None:
         """Handle target updates from the Tewke device.
