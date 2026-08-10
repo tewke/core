@@ -123,7 +123,7 @@
     'device_id': <ANY>,
     'disabled_by': <RegistryEntryDisabler.INTEGRATION: 'integration'>,
     'domain': 'sensor',
-    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
+    'entity_category': None,
     'entity_id': 'sensor.living_room_tewke_switch_breath_voc_equivalent',
     'has_entity_name': True,
     'hidden_by': None,
