@@ -81,8 +81,9 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
     assert result["data"] == {
         CONF_HOST: "127.0.0.1",
         CONF_NAME: "Tewke Switch",
+    }
+    assert result["options"] == {
         "room_name": "Living Room",
-        "scenes": {},
     }
     assert result["result"].unique_id == "test_dock_id"
 
@@ -116,34 +117,6 @@ async def test_full_zeroconf_flow_no_room(
     }
 
 
-async def test_reauth_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> None:
-    """Test reauth flow."""
-    mock_entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="test_dock_id",
-        data={
-            CONF_HOST: "192.168.1.100",
-            CONF_NAME: "Tewke Switch",
-            "room_name": "Living Room",
-            "scenes": {},
-        },
-    )
-    mock_entry.add_to_hass(hass)
-
-    result = await mock_entry.start_reauth_flow(hass)
-
-    assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
-
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={},
-    )
-
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "reauth_successful"
-
-
 async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> None:
     """Test reconfigure flow."""
     mock_entry = MockConfigEntry(
@@ -152,8 +125,9 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
         data={
             CONF_HOST: "192.168.1.100",
             CONF_NAME: "Tewke Switch",
+        },
+        options={
             "room_name": "Living Room",
-            "scenes": {},
         },
     )
     mock_entry.add_to_hass(hass)
@@ -173,8 +147,6 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
     assert mock_entry.data == {
         CONF_HOST: "192.168.1.100",
         CONF_NAME: "Tewke Switch",
-        "room_name": "Living Room",
-        "scenes": {},
     }
 
 

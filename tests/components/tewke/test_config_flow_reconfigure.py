@@ -18,6 +18,8 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
         data={
             CONF_HOST: "192.168.1.100",
             CONF_NAME: "Tewke Switch",
+        },
+        options={
             "room_name": "Living Room",
         },
     )

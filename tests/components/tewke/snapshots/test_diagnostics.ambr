@@ -11,8 +11,6 @@
       'radar': None,
       'scenes': dict({
       }),
-      'scenes_all': dict({
-      }),
       'sensors': None,
       'targets': dict({
       }),
@@ -20,11 +18,6 @@
     'entry_data': dict({
       'host': '**REDACTED**',
       'name': 'Tewke Switch',
-      'room_name': 'Living Room',
-      'scenes': dict({
-        'scene1': 'scene1',
-        'scene2': 'scene2',
-      }),
     }),
   })
 # ---

@@ -29,7 +29,6 @@ async def test_coordinator_setup_observe_fails(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -56,7 +55,6 @@ async def test_coordinator_device_swap(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -81,7 +79,6 @@ async def test_coordinator_get_scenes_fails(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -107,7 +104,6 @@ async def test_coordinator_get_targets_fails(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -140,7 +136,6 @@ async def test_coordinator_optional_endpoints_fail(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 

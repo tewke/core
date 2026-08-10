@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pytewke
-    from pytewke.data import Scene
 
     from homeassistant.config_entries import ConfigEntry
 
@@ -21,5 +20,4 @@ class TewkeData:
     host: str
     tap: pytewke.Tap
     coordinator: TewkeCoordinator
-    scenes: dict[str, Scene]
     observe_active: bool = False

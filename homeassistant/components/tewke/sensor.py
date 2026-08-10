@@ -75,9 +75,11 @@ SENSOR_DESCRIPTIONS: tuple[TewkeSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.HUMIDITY,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda s: round(s.compensated_humidity, 2)
-        if s.compensated_humidity is not None
-        else None,
+        value_fn=lambda s: (
+            round(s.compensated_humidity, 2)
+            if s.compensated_humidity is not None
+            else None
+        ),
     ),
     TewkeSensorEntityDescription(
         key="co2_equivalent",
@@ -105,9 +107,9 @@ SENSOR_DESCRIPTIONS: tuple[TewkeSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ILLUMINANCE,
         native_unit_of_measurement=LIGHT_LUX,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda s: round(s.ambient_light.lux, 2)
-        if s.ambient_light is not None
-        else None,
+        value_fn=lambda s: (
+            round(s.ambient_light.lux, 2) if s.ambient_light is not None else None
+        ),
     ),
     # Disabled by default — diagnostic / raw calibration values
     TewkeSensorEntityDescription(

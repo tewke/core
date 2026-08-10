@@ -71,7 +71,6 @@ async def test_coordinator_update_data_first_boot(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=MagicMock(),
-        scenes={"scene1": {"name": "Mock Scene"}},
         observe_active=False,
     )
     mock_tap.get_scenes.return_value = {"scene1": {"name": "Mock Scene"}}
@@ -85,7 +84,7 @@ async def test_coordinator_update_data_first_boot(
 
     data = await coordinator._async_update_data()
     assert data["scenes"] == {"scene1": {"name": "Mock Scene"}}
-    assert data["scenes_all"] == {"scene1": {"name": "Mock Scene"}}
+    assert data["scenes"] == {"scene1": {"name": "Mock Scene"}}
     assert data["targets"] == {}
     assert data["sensors"] is None
 
@@ -103,7 +102,6 @@ async def test_coordinator_update_data_active_observe(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=MagicMock(),
-        scenes={},
         observe_active=True,
     )
 

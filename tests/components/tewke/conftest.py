@@ -48,7 +48,8 @@ def mock_config_entry():
         data={
             CONF_HOST: "192.168.1.100",
             CONF_NAME: "Tewke Switch",
+        },
+        options={
             "room_name": "Living Room",
-            "scenes": {"scene1": "scene1", "scene2": "scene2"},
         },
     )

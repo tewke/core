@@ -86,7 +86,6 @@ class TewkeCoordinatorData(TypedDict):
     """Typed data held by TewkeCoordinator."""
 
     scenes: dict[str, Scene]
-    scenes_all: dict[str, Scene]
     targets: dict[int, Target]
     sensors: SensorData | None
     radar: RadarData | None
@@ -252,7 +251,7 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
             )
 
         try:
-            scenes_all = await _fetch_with_retries(tap.get_scenes)
+            scenes = await _fetch_with_retries(tap.get_scenes)
             targets = await _fetch_with_retries(tap.get_targets)
         except (
             PyTewkeCoapError,
@@ -265,13 +264,6 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
                 translation_key="communication_error",
                 translation_placeholders={"error": str(err)},
             ) from err
-
-        scenes = self.config_entry.runtime_data.scenes
-        configured_scenes = {
-            scene_id: scene
-            for scene_id, scene in scenes_all.items()
-            if scene_id in scenes
-        }
 
         try:
             sensors: SensorData | None = await tap.get_sensors()
@@ -329,8 +321,7 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
             config = None
 
         return TewkeCoordinatorData(
-            scenes=configured_scenes,
-            scenes_all=scenes_all,
+            scenes=scenes,
             targets=targets,
             sensors=sensors,
             radar=radar,

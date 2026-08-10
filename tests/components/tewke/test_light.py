@@ -236,6 +236,7 @@ async def test_light_availability(
     coordinator = mock_config_entry.runtime_data.coordinator
 
     new_data = TewkeCoordinatorData(
+        scenes={},
         targets={
             2: Target.model_construct(
                 name="Second Light",
@@ -245,15 +246,6 @@ async def test_light_availability(
                 brightness=0,
             ),
         },
-        scenes={
-            "scene2": Scene.model_construct(
-                id="scene2",
-                name="Night",
-                is_active=False,
-                brightness=0,
-            ),
-        },
-        scenes_all=coordinator.data["scenes_all"],
         sensors=coordinator.data["sensors"],
         radar=coordinator.data["radar"],
         energy=coordinator.data["energy"],
@@ -288,8 +280,6 @@ async def test_light_availability(
     # This covers `if target is None: return` in target.async_turn_on and `brightness` when target is None
     new_data = TewkeCoordinatorData(
         targets={},  # Target missing
-        scenes={},
-        scenes_all=coordinator.data["scenes_all"],
         sensors=coordinator.data["sensors"],
         radar=coordinator.data["radar"],
         energy=coordinator.data["energy"],
