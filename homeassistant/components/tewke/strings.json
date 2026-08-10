@@ -91,21 +91,5 @@
     "set_energy_override_timeout": {
       "message": "Setting energy override timed out."
     }
-  },
-  "issues": {
-    "new_scenes_found": {
-      "fix_flow": {
-        "abort": {
-          "no_new_scenes": "There are no new scenes pending configuration for your Tewke device {name}."
-        },
-        "step": {
-          "init": {
-            "description": "New scenes were found on your Tewke device **{name}**:\n\n{scene_list}\n\nClick Submit to add them.",
-            "title": "Configure new scenes for {name}"
-          }
-        }
-      },
-      "title": "New Scenes discovered"
-    }
   }
 }
