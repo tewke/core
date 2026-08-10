@@ -170,6 +170,12 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+    assert mock_entry.data == {
+        CONF_HOST: "192.168.1.100",
+        CONF_NAME: "Tewke Switch",
+        "room_name": "Living Room",
+        "scenes": {},
+    }
 
 
 async def test_zeroconf_flow_connection_error(

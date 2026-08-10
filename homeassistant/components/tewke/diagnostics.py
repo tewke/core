@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 TO_REDACT = {
     CONF_HOST,
     "hardwareId",
+    "hardware_id",
 }
 
 

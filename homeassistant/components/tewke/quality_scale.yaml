@@ -49,9 +49,7 @@ rules:
   docs-supported-functions: done
   docs-troubleshooting: done
   docs-use-cases: done
-  dynamic-devices:
-    status: exempt
-    comment: The integration creates exactly one device (the Wall Dock) per config entry; sub-devices are not supported.
+  dynamic-devices: done
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done
@@ -59,10 +57,10 @@ rules:
   exception-translations: done
   icon-translations: done
   reconfiguration-flow: done
-  repair-issues: done
-  stale-devices:
+  repair-issues:
     status: exempt
-    comment: The integration creates exactly one device (the Wall Dock) per config entry; there are no dynamically discovered child devices to go stale.
+    comment: We automatically detect and add scenes when they are missing. No other repairs are needed.
+  stale-devices: done
 
   # Platinum
   async-dependency: todo

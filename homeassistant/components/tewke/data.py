@@ -1,6 +1,6 @@
 """Custom types for the Tewke integration."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -22,5 +22,4 @@ class TewkeData:
     tap: pytewke.Tap
     coordinator: TewkeCoordinator
     scenes: dict[str, Scene]
-    pending_scenes: dict[str, Scene] = field(default_factory=dict)
     observe_active: bool = False

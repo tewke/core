@@ -3,7 +3,7 @@
   dict({
     'data': dict({
       'config': dict({
-        'hardware_id': 'test_dock_id',
+        'hardware_id': '**REDACTED**',
         'screen_on': None,
       }),
       'energy': None,
