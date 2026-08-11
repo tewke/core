@@ -341,7 +341,7 @@ class TewkeCoordinator(DataUpdateCoordinator[TewkeCoordinatorData]):
                 )
 
         return TewkeCoordinatorData(
-            scenes=scenes,
+            scenes=dict(scenes),
             targets=targets,
             sensors=sensors,
             radar=radar,

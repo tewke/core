@@ -98,7 +98,7 @@ class _TewkeObserver:
             self.coordinator.async_set_updated_data(
                 {
                     **self.coordinator.data,
-                    "scenes": scenes,
+                    "scenes": dict(scenes),
                 }
             )
             async_dispatcher_send(
@@ -111,7 +111,7 @@ class _TewkeObserver:
         self.coordinator.async_set_updated_data(
             {
                 **self.coordinator.data,
-                "scenes": scenes,
+                "scenes": dict(scenes),
             }
         )
 
