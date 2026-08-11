@@ -83,5 +83,5 @@ class TewkeEntity(CoordinatorEntity[TewkeCoordinator]):
             manufacturer="Tewke",
             model="Tap",
             sw_version=tap.tewke_os_version,
-            suggested_area=entry.data.get("room_name"),
+            suggested_area=entry.options.get("room_name"),
         )

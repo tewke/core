@@ -26,9 +26,6 @@ async def async_get_config_entry_diagnostics(
         "scenes": {k: v.model_dump() for k, v in data["scenes"].items()}
         if data.get("scenes")
         else {},
-        "scenes_all": {k: v.model_dump() for k, v in data["scenes_all"].items()}
-        if data.get("scenes_all")
-        else {},
         "targets": {k: v.model_dump() for k, v in data["targets"].items()}
         if data.get("targets")
         else {},

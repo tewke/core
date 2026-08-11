@@ -69,7 +69,7 @@ class _TewkeObserver:
         if self.coordinator.data is None:
             return
 
-        current_scenes = self.entry.runtime_data.scenes.copy()
+        current_scenes = self.coordinator.data["scenes"]
 
         # Handle scenes that are no longer provided by the device
         removed_configured_ids = [sid for sid in current_scenes if sid not in scenes]
@@ -86,9 +86,6 @@ class _TewkeObserver:
                     if entity_id:
                         ent_reg.async_remove(entity_id)
 
-            for sid in removed_configured_ids:
-                del current_scenes[sid]
-
         # Add new scenes
         new_scenes = {
             scene_id: scene
@@ -98,29 +95,14 @@ class _TewkeObserver:
 
         if new_scenes:
             LOGGER.info("Discovered new scenes, automatically adding: %s", new_scenes)
-            current_scenes.update(new_scenes)
             async_dispatcher_send(
                 self.hass, DISPATCHER_ADD_SCENES, list(new_scenes.values())
             )
 
-        # Update entry if there were any changes
-        if removed_configured_ids or new_scenes:
-            new_data = dict(self.entry.data)
-            new_data["scenes"] = current_scenes
-            self.entry.runtime_data.scenes = current_scenes
-            self.hass.config_entries.async_update_entry(self.entry, data=new_data)
-
-        configured_scenes = {
-            scene_id: scene
-            for scene_id, scene in scenes.items()
-            if scene_id in current_scenes
-        }
-
         self.coordinator.async_set_updated_data(
             {
                 **self.coordinator.data,
-                "scenes": configured_scenes,
-                "scenes_all": scenes,
+                "scenes": scenes,
             }
         )
 
@@ -256,9 +238,5 @@ async def async_setup_observe(
 
     entry.runtime_data.observe_active = True
     coordinator.reset_observation_timeout()
-
-    # Process scenes already fetched during initial discovery
-    if coordinator.data and "scenes_all" in coordinator.data:
-        observer.on_scene_update(coordinator.data["scenes_all"])
 
     return True

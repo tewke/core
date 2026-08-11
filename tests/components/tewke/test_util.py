@@ -49,15 +49,14 @@ async def test_async_setup_observe_success(
     """Test setting up CoAP observations successfully."""
     mock_config_entry.runtime_data = TewkeData(
         host="test_host",
-        coordinator=AsyncMock(),
+        coordinator=MagicMock(),
         tap=mock_tap,
-        scenes={
-            "scene1": Scene(id="scene1", name="Scene 1", isActive=False, brightness=0),
-        },
     )
 
-    coordinator = AsyncMock()
-    coordinator.data = {"scenes_all": {"scene1": Scene.model_construct(id="scene1")}}
+    coordinator = MagicMock()
+    coordinator.data = {
+        "scenes": {"scene1": Scene.model_construct(id="scene1", name="Scene 1")}
+    }
 
     mock_tap._observation_manager = AsyncMock()
 
@@ -72,9 +71,6 @@ async def test_async_setup_observe_success(
         mock_tap.clear_callbacks.assert_called_once()
         mock_tap._observation_manager.close.assert_awaited_once()
         mock_tap.observe.assert_awaited_once()
-        mock_observer_instance.on_scene_update.assert_called_once_with(
-            coordinator.data["scenes_all"]
-        )
 
 
 async def test_async_setup_observe_error(
@@ -86,12 +82,11 @@ async def test_async_setup_observe_error(
 
     mock_config_entry.runtime_data = TewkeData(
         host="test_host",
-        coordinator=AsyncMock(),
+        coordinator=MagicMock(),
         tap=mock_tap,
-        scenes={},
     )
 
-    coordinator = AsyncMock()
+    coordinator = MagicMock()
 
     mock_tap.observe.side_effect = PyTewkeObserveError("test error")
 
@@ -113,25 +108,25 @@ async def test_tewke_observer(
     mock_tap.wall_dock_id = "test_dock_id"
     mock_config_entry.runtime_data = TewkeData(
         host="test_host",
-        coordinator=AsyncMock(),
+        coordinator=MagicMock(),
         tap=mock_tap,
-        scenes={
-            "scene1": Scene(id="scene1", name="Scene 1", isActive=False, brightness=0),
-            "scene2": Scene(id="scene2", name="Scene 2", isActive=False, brightness=0),
-        },
     )
     mock_config_entry.add_to_hass(hass)
 
-    coordinator = AsyncMock()
+    coordinator = MagicMock()
     coordinator.data = TewkeCoordinatorData(
         config=ConfigData.model_construct(hardware_id="test_hardware"),
         energy=None,
         radar=None,
         sensors=None,
         scenes={"scene1": Scene.model_construct(id="scene1", name="Scene 1")},
-        scenes_all={"scene1": Scene.model_construct(id="scene1", name="Scene 1")},
         targets={},
     )
+
+    def _mock_set_updated_data(data):
+        coordinator.data = data
+
+    coordinator.async_set_updated_data.side_effect = _mock_set_updated_data
 
     observer = _TewkeObserver(coordinator, hass, mock_config_entry)
 
@@ -139,7 +134,7 @@ async def test_tewke_observer(
     observer.on_scene_update(
         {"scene1": Scene.model_construct(id="scene1", name="Scene 1")}
     )
-    assert "scene2" not in mock_config_entry.runtime_data.scenes
+    assert "scene2" not in coordinator.data["scenes"]
 
     # Test on_scene_update: new scene
     with patch(
@@ -151,7 +146,7 @@ async def test_tewke_observer(
                 "scene3": Scene.model_construct(id="scene3", name="Scene 3"),
             }
         )
-        assert "scene3" in mock_config_entry.runtime_data.scenes
+        assert "scene3" in coordinator.data["scenes"]
         mock_dispatcher.assert_called_once()
         assert mock_dispatcher.call_args[0][1] == "tewke_add_scenes"
 

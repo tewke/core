@@ -21,7 +21,6 @@ async def test_coordinator_reset_and_cancel_timeout(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -60,7 +59,6 @@ async def test_coordinator_handle_timeout_retry_success_first_try(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -92,7 +90,6 @@ async def test_coordinator_handle_timeout_retry_success_second_try(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -127,7 +124,6 @@ async def test_coordinator_handle_timeout_retry_fail_all(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -167,7 +163,6 @@ async def test_coordinator_handle_timeout_already_running(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
@@ -192,7 +187,6 @@ async def test_coordinator_cancel_timeout_with_task(
         host="127.0.0.1",
         tap=mock_tap,
         coordinator=AsyncMock(),
-        scenes={},
         observe_active=False,
     )
 
