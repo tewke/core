@@ -95,9 +95,18 @@ class _TewkeObserver:
 
         if new_scenes:
             LOGGER.info("Discovered new scenes, automatically adding: %s", new_scenes)
-            async_dispatcher_send(
-                self.hass, DISPATCHER_ADD_SCENES, list(new_scenes.values())
+            self.coordinator.async_set_updated_data(
+                {
+                    **self.coordinator.data,
+                    "scenes": scenes,
+                }
             )
+            async_dispatcher_send(
+                self.hass,
+                f"{DISPATCHER_ADD_SCENES}_{self.entry.entry_id}",
+                list(new_scenes.values()),
+            )
+            return
 
         self.coordinator.async_set_updated_data(
             {

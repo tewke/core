@@ -65,14 +65,57 @@ class TewkeConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered_host = entry.data[CONF_HOST]
         self._discovered_name = entry.data[CONF_NAME]
         self._room_name = entry.options.get("room_name")
-        return await self.async_step_confirmation()
+        return await self.async_step_zeroconf_confirm()
 
     async def async_step_zeroconf_confirm(
         self, user_input: dict[str, str] | None = None
     ) -> ConfigFlowResult:
-        """Confirm the discovered device and proceed to scene setup."""
+        """Confirm the discovered device and create the config entry."""
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            return await self.async_step_confirmation()
+            tap = (
+                self._tap
+                if self._tap is not None
+                else pytewke.Tap(self._discovered_host)
+            )
+            self._tap = tap
+
+            try:
+                if not tap.resources:
+                    await tap.discover()
+
+                # Verify connection by fetching scenes
+                await tap.get_scenes()
+            except PyTewkeDiscoveryError:
+                await tap.close()
+                self._tap = None
+                errors["base"] = "cannot_connect"
+            else:
+                data = {
+                    CONF_HOST: self._discovered_host,
+                    CONF_NAME: self._discovered_name,
+                }
+                options = {"room_name": self._room_name} if self._room_name else {}
+
+                if self.source == SOURCE_RECONFIGURE:
+                    entry = self._get_reconfigure_entry()
+                    # Do not override existing options unless needed, wait,
+                    # actually during reconfigure, maybe keep old options?
+                    # The old code did: `options = dict(entry.options)`
+                    # Let's keep that.
+
+                    return self.async_update_reload_and_abort(
+                        entry,
+                        data=data,
+                        options=dict(entry.options),
+                    )
+
+                return self.async_create_entry(
+                    title=self._discovered_name,
+                    data=data,
+                    options=options,
+                )
 
         room_suffix = f", in room **{self._room_name}**" if self._room_name else ""
         return self.async_show_form(
@@ -81,62 +124,5 @@ class TewkeConfigFlow(ConfigFlow, domain=DOMAIN):
                 "name": self._discovered_name,
                 "room_suffix": room_suffix,
             },
-        )
-
-    async def async_step_confirmation(
-        self, user_input: dict[str, str] | None = None
-    ) -> ConfigFlowResult:
-        """Show confirmation before creating the config entry."""
-        errors: dict[str, str] = {}
-
-        if user_input is None:
-            return self.async_show_form(
-                step_id="confirmation",
-                description_placeholders={"name": self._discovered_name},
-                errors=errors,
-            )
-
-        tap = self._tap if self._tap is not None else pytewke.Tap(self._discovered_host)
-        self._tap = tap
-
-        try:
-            if not tap.resources:
-                await tap.discover()
-
-            # Verify connection by fetching scenes
-            await tap.get_scenes()
-        except PyTewkeDiscoveryError:
-            await tap.close()
-            self._tap = None
-            errors["base"] = "cannot_connect"
-        else:
-            data = {
-                CONF_HOST: self._discovered_host,
-                CONF_NAME: self._discovered_name,
-            }
-            options = {"room_name": self._room_name} if self._room_name else {}
-
-            if self.source == SOURCE_RECONFIGURE:
-                entry = self._get_reconfigure_entry()
-                # Do not override existing options unless needed, wait,
-                # actually during reconfigure, maybe keep old options?
-                # The old code did: `options = dict(entry.options)`
-                # Let's keep that.
-
-                return self.async_update_reload_and_abort(
-                    entry,
-                    data=data,
-                    options=dict(entry.options),
-                )
-
-            return self.async_create_entry(
-                title=self._discovered_name,
-                data=data,
-                options=options,
-            )
-
-        return self.async_show_form(
-            step_id="confirmation",
-            description_placeholders={"name": self._discovered_name},
             errors=errors,
         )

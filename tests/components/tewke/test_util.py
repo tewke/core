@@ -148,7 +148,10 @@ async def test_tewke_observer(
         )
         assert "scene3" in coordinator.data["scenes"]
         mock_dispatcher.assert_called_once()
-        assert mock_dispatcher.call_args[0][1] == "tewke_add_scenes"
+        assert (
+            mock_dispatcher.call_args[0][1]
+            == f"tewke_add_scenes_{mock_config_entry.entry_id}"
+        )
 
     # Test on_scene_update: no new scenes
     observer.on_scene_update(
