@@ -79,6 +79,7 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
         "room_name": "Living Room",
     }
     assert result["result"].unique_id == "test_dock_id"
+    mock_tap.close.assert_called_once()
 
 
 async def test_full_zeroconf_flow_no_room(
@@ -141,6 +142,7 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
         CONF_HOST: "192.168.1.100",
         CONF_NAME: "Tewke Switch",
     }
+    mock_tap.close.assert_called_once()
 
 
 async def test_zeroconf_flow_connection_error(
@@ -193,3 +195,4 @@ async def test_zeroconf_flow_connection_error(
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Tewke Switch"
     assert mock_tap.discover.call_count == 2
+    assert mock_tap.close.call_count == 2

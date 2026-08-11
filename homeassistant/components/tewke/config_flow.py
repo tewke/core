@@ -105,11 +105,17 @@ class TewkeConfigFlow(ConfigFlow, domain=DOMAIN):
                     # The old code did: `options = dict(entry.options)`
                     # Let's keep that.
 
+                    await tap.close()
+                    self._tap = None
+
                     return self.async_update_reload_and_abort(
                         entry,
                         data=data,
                         options=dict(entry.options),
                     )
+
+                await tap.close()
+                self._tap = None
 
                 return self.async_create_entry(
                     title=self._discovered_name,
