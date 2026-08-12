@@ -68,13 +68,6 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
         result["flow_id"],
         user_input={},
     )
-    assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
-
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={},
-    )
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Tewke Switch"
@@ -86,6 +79,7 @@ async def test_full_zeroconf_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> N
         "room_name": "Living Room",
     }
     assert result["result"].unique_id == "test_dock_id"
+    mock_tap.close.assert_called_once()
 
 
 async def test_full_zeroconf_flow_no_room(
@@ -135,7 +129,7 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
     result = await mock_entry.start_reconfigure_flow(hass)
 
     assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
+    assert result["step_id"] == "zeroconf_confirm"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -148,6 +142,7 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
         CONF_HOST: "192.168.1.100",
         CONF_NAME: "Tewke Switch",
     }
+    mock_tap.close.assert_called_once()
 
 
 async def test_zeroconf_flow_connection_error(
@@ -181,16 +176,9 @@ async def test_zeroconf_flow_connection_error(
         result["flow_id"],
         user_input={},
     )
-    assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
-
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        user_input={},
-    )
 
     assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
+    assert result["step_id"] == "zeroconf_confirm"
     assert result["errors"] == {"base": "cannot_connect"}
     mock_tap.close.assert_called_once()
 
@@ -207,3 +195,4 @@ async def test_zeroconf_flow_connection_error(
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Tewke Switch"
     assert mock_tap.discover.call_count == 2
+    assert mock_tap.close.call_count == 2

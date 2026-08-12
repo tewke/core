@@ -12,10 +12,6 @@
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
     },
     "step": {
-      "confirmation": {
-        "description": "Your Tewke device **{name}** is ready to be added to Home Assistant. Click Submit to complete the setup.",
-        "title": "Final setup"
-      },
       "zeroconf_confirm": {
         "description": "You are setting up the Tewke device **{name}**{room_suffix}. Click Submit to continue.",
         "title": "Tewke device found"

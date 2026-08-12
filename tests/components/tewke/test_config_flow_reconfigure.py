@@ -28,7 +28,7 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
     result = await mock_entry.start_reconfigure_flow(hass)
 
     assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "confirmation"
+    assert result["step_id"] == "zeroconf_confirm"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -37,3 +37,4 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_tap: AsyncMock) -> Non
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+    mock_tap.close.assert_called_once()
