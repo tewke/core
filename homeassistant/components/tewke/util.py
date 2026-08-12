@@ -66,9 +66,6 @@ class _TewkeObserver:
         and removes deleted scenes.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
-
         current_scenes = self.coordinator.data["scenes"]
 
         # Handle scenes that are no longer provided by the device
@@ -122,9 +119,6 @@ class _TewkeObserver:
         It updates the coordinator with the new target data.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
-
         self.coordinator.async_set_updated_data(
             {
                 **self.coordinator.data,
@@ -138,8 +132,6 @@ class _TewkeObserver:
         This callback is triggered when the sensors on the device change.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
         self.coordinator.async_set_updated_data(
             {**self.coordinator.data, "sensors": sensor_data}
         )
@@ -150,8 +142,6 @@ class _TewkeObserver:
         This callback is triggered when the radar on the device changes.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
         self.coordinator.async_set_updated_data(
             {**self.coordinator.data, "radar": radar_data}
         )
@@ -162,8 +152,6 @@ class _TewkeObserver:
         This callback is triggered when the energy on the device changes.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
         self.coordinator.async_set_updated_data(
             {**self.coordinator.data, "energy": energy_data}
         )
@@ -174,8 +162,6 @@ class _TewkeObserver:
         This callback is triggered when the config on the device changes.
         """
         self.coordinator.reset_observation_timeout()
-        if self.coordinator.data is None:
-            return
         self.coordinator.async_set_updated_data(
             {**self.coordinator.data, "config": config_data}
         )
