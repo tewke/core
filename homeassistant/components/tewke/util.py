@@ -171,7 +171,9 @@ class _TewkeObserver:
         if device_id is None:
             return
 
-        device = device_registry.async_get_device(identifiers={(DOMAIN, device_id)})
+        device = device_registry.async_get_device_by_identifier(
+            (DOMAIN, device_id), self.entry.entry_id
+        )
 
         if device:
             new_name = config_data.device_name
